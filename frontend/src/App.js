@@ -68,12 +68,12 @@ function App() {
         <div>
             <h1>Contrôler le Coffre Arduino</h1>
             <form onSubmit={sendMessage}>
-                <input
-                    type="text"
-                    placeholder="Entrez votre message"
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    required
+                <input 
+                    type="text" 
+                    value={messageInput} 
+                    onChange={(e) => setMessageInput(e.target.value)} 
+                    placeholder="Entrez votre message" 
+                    required 
                 />
                 <button type="submit">Envoyer</button>
             </form>

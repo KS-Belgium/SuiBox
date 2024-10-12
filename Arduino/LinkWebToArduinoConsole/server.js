@@ -1,11 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { SerialPort } = require('serialport');
+const cors = require('cors');
 
 const app = express();
 const port = 3000;
 
-// Middleware pour parser le JSON
+// Middleware pour gérer CORS
+app.use(cors()); // Permettre toutes les origines (peut être ajusté pour une sécurité accrue)
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -32,7 +34,7 @@ serialPort.on('data', (data) => {
   // Vérifier si on a reçu un saut de ligne pour traiter le message
   if (incomingData.includes('\n')) {
     const messages = incomingData.split('\n');
-    
+
     // Prendre tous les messages sauf le dernier, qui pourrait être incomplet
     messages.slice(0, -1).forEach((message) => {
       lastMessage = message.trim(); // Mettre à jour le dernier message
@@ -76,11 +78,6 @@ app.get('/last-message', (req, res) => {
   } else {
     res.status(404).send('Aucun message reçu pour le moment.');
   }
-});
-
-// Route pour afficher l'interface
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html'); // Assurez-vous que index.html est dans le même répertoire
 });
 
 // Démarrage du serveur
