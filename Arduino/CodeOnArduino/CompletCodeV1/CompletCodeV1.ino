@@ -127,6 +127,7 @@ void loop() {
       if (nfc.write(ndefMessage)) {
         code = message; // Mettre à jour le code à lire
         Serial.println("Écriture réussie !");
+        Serial.print("Code : " + message);
         isWriting = false; // Passer en mode lecture après l'écriture
       } 
       else {
