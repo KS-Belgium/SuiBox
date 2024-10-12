@@ -1,6 +1,6 @@
 # SuiBox
 
-A security system for hotel safes built with Sui Technology
+A security system for hotel safes and more, built with Sui Technology. It addresses the issues of lack of trust and lack of security regarding safes in public environments.
 
 ## Demo
 
@@ -23,7 +23,7 @@ Insert gif or link to demo
 **Front-end:** React, Tailwind  
 **Back-end:** Sui Move, Python, C++ (Arduino)
 
-## Problem: Traditional Hotel Safe Issues
+## Concrete Example: Traditional Hotel Safe Issues
 
 In the hospitality industry, hotel safes provide a space for guests to store valuables like passports, jewelry, and electronics. However, traditional hotel safes come with issues that can compromise guest trust and security:
 
