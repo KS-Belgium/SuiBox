@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrôleur Arduino</title>
+    <style>
+        #response {
+            margin-top: 20px;
+        }
+        #lastMessage {
+            margin-top: 20px;
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <h1>Contrôler le Coffre Arduino</h1>
+    
+    <form id="sendForm">
+        <input type="text" id="messageInput" placeholder="Entrez votre message" required>
+        <button type="submit">Envoyer</button>
+    </form>
+
+    <div id="response"></div>
+    <div id="status"></div> <!-- Pour afficher l'état du coffre -->
+    <div id="lastMessage"></div> <!-- Pour afficher le dernier message reçu -->
+
+    <script>
+        document.getElementById('sendForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const message = document.getElementById('messageInput').value;
+
+            fetch('http://localhost:3000/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('response').innerText = data;
+            })
+            .catch(error => console.error('Erreur:', error));
+        });
+
+        // Fonction pour récupérer l'état du coffre
+        function fetchStatus() {
+            fetch('http://localhost:3000/status')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('status').innerText = 'État du coffre: ' + data;
+                })
+                .catch(error => console.error('Erreur:', error));
+        }
+
+        // Fonction pour récupérer le dernier message Arduino
+        function fetchLastMessage() {
+            fetch('http://localhost:3000/last-message')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('lastMessage').innerText = 'Dernier message Arduino: ' + data;
+                })
+                .catch(error => console.error('Erreur:', error));
+        }
+
+        // Appeler fetchStatus et fetchLastMessage toutes les 2 secondes
+        setInterval(fetchStatus, 2000);
+        setInterval(fetchLastMessage, 2000);
+    </script>
+</body>
+</html>
