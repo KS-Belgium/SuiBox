@@ -61,6 +61,27 @@ function App() {
         }
     };
 
+    // Function to send an error message to the Arduino
+    const cancelAction = async () => {
+        try {
+            const res = await fetch('http://localhost:3000/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: 'error' }) // Send the error message
+            });
+            const data = await res.text();
+            setResponse(data);
+            setShowRoomList(false); // Hide the list after cancellation
+            setSelectedRoom(''); // Reset the selected room
+            setCode(''); // Reset the code
+        } catch (error) {
+            console.error('Error:', error);
+            setResponse('Error sending the cancellation message.');
+        }
+    };
+
     // Function to fetch the state of the safe
     const fetchStatus = async () => {
         try {
@@ -132,23 +153,26 @@ function App() {
                 <div className="col-md-8">
                     {selectedRoom && (
                         <div>
-                            <h3>Selected: {selectedRoom}</h3>
-                            <div className="form-group">
-                                <label htmlFor="codeInput">Code to send:</label>
-                                <input 
-                                    type="text" 
-                                    className="form-control" 
-                                    id="codeInput" 
-                                    value={code} 
-                                    onChange={(e) => setCode(e.target.value)} // Update the code on input change
-                                    placeholder="Enter your code here"
-                                    required
-                                />
-                            </div>
-                            <button className="btn btn-success mt-3" onClick={sendCodeToArduino}>
-                                Send code
-                            </button>
+                        <h3>Selected: {selectedRoom}</h3>
+                        <div className="form-group">
+                            <label htmlFor="codeInput">Code to send:</label>
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                id="codeInput" 
+                                value={code} 
+                                onChange={(e) => setCode(e.target.value)} // Update the code on input change
+                                placeholder="Enter your code here"
+                                required
+                            />
                         </div>
+                        <button className="btn btn-danger me-2 mt-3" onClick={cancelAction}>
+                            Cancel
+                        </button>
+                        <button className="btn btn-success mt-3" onClick={sendCodeToArduino}>
+                            Send code
+                        </button>
+                    </div>
                     )}
                     <div className="alert alert-info mt-3" role="alert">
                         {response}
