@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css'; // Importer le CSS de Bootstrap
+import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
 
 function App() {
     const [response, setResponse] = useState('');
@@ -7,43 +7,43 @@ function App() {
     const [lastMessage, setLastMessage] = useState('');
     const [showRoomList, setShowRoomList] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState('');
-    const [code, setCode] = useState(''); // Code à envoyer
+    const [code, setCode] = useState(''); // Code to send
 
-    // Fonction pour créer une nouvelle carte
+    // Function to create a new card
     const createCard = async () => {
         setShowRoomList(true);
-        await sendCommandToArduino('write'); // Envoyer 'write' à l'Arduino
+        await sendCommandToArduino('write'); // Send 'write' to the Arduino
     };
 
-    // Fonction pour sélectionner une chambre
+    // Function to select a room
     const selectRoom = (room) => {
         setSelectedRoom(room);
-        setCode(''); // Réinitialiser le code lors de la sélection d'une chambre
+        setCode(''); // Reset the code when a room is selected
     };
 
-    // Fonction pour envoyer le code à l'Arduino
+    // Function to send the code to the Arduino
     const sendCodeToArduino = async () => {
-        if (!selectedRoom || !code) return; // Vérifier si une chambre et un code sont sélectionnés
+        if (!selectedRoom || !code) return; // Check if a room and code are selected
         try {
             const res = await fetch('http://localhost:3000/send', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: `${code}` }) // Message avec le code
+                body: JSON.stringify({ message: `${code}` }) // Message with the code
             });
             const data = await res.text();
             setResponse(data);
-            setShowRoomList(false); // Masquer la liste après l'envoi
-            setSelectedRoom(''); // Réinitialiser la chambre sélectionnée
-            setCode(''); // Réinitialiser le code
+            setShowRoomList(false); // Hide the list after sending
+            setSelectedRoom(''); // Reset the selected room
+            setCode(''); // Reset the code
         } catch (error) {
-            console.error('Erreur:', error);
-            setResponse('Erreur lors de l\'envoi du code.');
+            console.error('Error:', error);
+            setResponse('Error sending the code.');
         }
     };
 
-    // Fonction pour envoyer une commande à l'Arduino
+    // Function to send a command to the Arduino
     const sendCommandToArduino = async (command) => {
         try {
             const res = await fetch('http://localhost:3000/send', {
@@ -51,46 +51,46 @@ function App() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: command }) // Envoyer la commande
+                body: JSON.stringify({ message: command }) // Send the command
             });
             const data = await res.text();
             setResponse(data);
         } catch (error) {
-            console.error('Erreur:', error);
-            setResponse('Erreur lors de l\'envoi de la commande.');
+            console.error('Error:', error);
+            setResponse('Error sending the command.');
         }
     };
 
-    // Fonction pour récupérer l'état du coffre
+    // Function to fetch the state of the safe
     const fetchStatus = async () => {
         try {
             const res = await fetch('http://localhost:3000/status');
             const data = await res.text();
-            setStatus('État du coffre: ' + data);
+            setStatus('Safe status: ' + data);
         } catch (error) {
-            console.error('Erreur:', error);
-            setStatus('Erreur lors de la récupération de l\'état.');
+            console.error('Error:', error);
+            setStatus('Error fetching the status.');
         }
     };
 
-    // Fonction pour récupérer le dernier message de l'Arduino
+    // Function to fetch the last message from the Arduino
     const fetchLastMessage = async () => {
         try {
             const res = await fetch('http://localhost:3000/last-message');
             const data = await res.text();
-            setLastMessage('Dernier message Arduino: ' + data);
+            setLastMessage('Last message from Arduino: ' + data);
         } catch (error) {
-            console.error('Erreur:', error);
-            setLastMessage('Aucun message reçu.');
+            console.error('Error:', error);
+            setLastMessage('No message received.');
         }
     };
 
-    // Utiliser useEffect pour appeler fetchStatus et fetchLastMessage toutes les 2 secondes
+    // Use useEffect to call fetchStatus and fetchLastMessage every 2 seconds
     useEffect(() => {
         const intervalStatus = setInterval(fetchStatus, 2000);
         const intervalLastMessage = setInterval(fetchLastMessage, 2000);
 
-        // Nettoyer les intervalles lors du démontage du composant
+        // Clean up the intervals on component unmount
         return () => {
             clearInterval(intervalStatus);
             clearInterval(intervalLastMessage);
@@ -99,12 +99,12 @@ function App() {
 
     return (
         <div className="container mt-5">
-            <h1 className="text-center">Contrôler le Coffre Arduino</h1>
+            <h1 className="text-center">Control the Arduino Safe</h1>
             <div className="row">
                 <div className="col-md-4">
-                    {!showRoomList && ( // Afficher le bouton seulement si la liste est masquée
+                    {!showRoomList && ( // Show the button only if the list is hidden
                         <button className="btn btn-primary mb-3" onClick={createCard}>
-                            Ajouter une nouvelle carte
+                            Add a new card
                         </button>
                     )}
                     {showRoomList && (
@@ -118,7 +118,7 @@ function App() {
                             <a 
                                 href="#" 
                                 className="list-group-item list-group-item-action disabled">
-                                Room 2 (Désactivé)
+                                Room 2 (Disabled)
                             </a>
                             <a 
                                 href="#" 
@@ -132,21 +132,21 @@ function App() {
                 <div className="col-md-8">
                     {selectedRoom && (
                         <div>
-                            <h3>Sélectionné : {selectedRoom}</h3>
+                            <h3>Selected: {selectedRoom}</h3>
                             <div className="form-group">
-                                <label htmlFor="codeInput">Code à envoyer :</label>
+                                <label htmlFor="codeInput">Code to send:</label>
                                 <input 
                                     type="text" 
                                     className="form-control" 
                                     id="codeInput" 
                                     value={code} 
-                                    onChange={(e) => setCode(e.target.value)} // Mettre à jour le code à chaque saisie
-                                    placeholder="Entrez votre code ici"
+                                    onChange={(e) => setCode(e.target.value)} // Update the code on input change
+                                    placeholder="Enter your code here"
                                     required
                                 />
                             </div>
                             <button className="btn btn-success mt-3" onClick={sendCodeToArduino}>
-                                Envoyer le code
+                                Send code
                             </button>
                         </div>
                     )}

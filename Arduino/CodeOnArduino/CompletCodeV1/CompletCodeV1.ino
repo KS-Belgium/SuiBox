@@ -9,46 +9,46 @@ Servo servoMotor;
 PN532_I2C pn532_i2c(Wire);
 NfcAdapter nfc = NfcAdapter(pn532_i2c);
 
-const int ledMode = 10; // LED pour indiquer le mode (allumé = écriture)
+const int ledMode = 10; // LED to indicate mode (on = writing)
 const int ledOpen = 2;
 const int ledClose = 3;
-String code = "null"; // Le code à lire (initialisé à "null")
+String code = "null"; // Code to read (initialized to "null")
 String message = "null";
-int etatCoffre = false; // false = fermer, true = ouvert
+int coffreState = false; // false = closed, true = open
 bool isWriting = false;
 
 void setup() {
-  pinMode(ledMode, OUTPUT); // Initialiser la LED en sortie
-  servoMotor.attach(7); // Indiquez la broche à laquelle le servo est connecté 
-  servoMotor.write(179); //close
+  pinMode(ledMode, OUTPUT); // Initialize the LED as output
+  servoMotor.attach(7); // Specify the pin to which the servo is connected 
+  servoMotor.write(179); // close
   digitalWrite(ledClose, HIGH);
   digitalWrite(ledOpen, LOW);
-  Serial.begin(115200); // Initialiser la communication série
-  Serial.println("Système initialisé");
-  nfc.begin();  // Initialiser le module NFC
+  Serial.begin(115200); // Initialize serial communication
+  Serial.println("System initialized");
+  nfc.begin();  // Initialize the NFC module
 }
 
 void loop() {
   String input = Serial.readString();
   input.trim();
-  if(input == "write"){
+  if (input == "write") {
     isWriting = true;
   }
 
-  if(!isWriting){
-     // Mode lecture
+  if (!isWriting) {
+    // Read mode
     if (code != "null") {
-      digitalWrite(ledMode, LOW); // Éteindre la LED
+      digitalWrite(ledMode, LOW); // Turn off the LED
       Serial.println("\nScan a NFC tag\n");
 
-      if (nfc.tagPresent()) {  // Vérifie si un tag NFC est présent
-        NfcTag tag = nfc.read();  // Lire le tag
+      if (nfc.tagPresent()) {  // Check if an NFC tag is present
+        NfcTag tag = nfc.read();  // Read the tag
 
         if (tag.hasNdefMessage()) {
           NdefMessage ndefMessage = tag.getNdefMessage();
           int recordCount = ndefMessage.getRecordCount();
 
-          Serial.print("Nombre d'enregistrements NDEF trouvés: ");
+          Serial.print("Number of NDEF records found: ");
           Serial.println(recordCount);
 
           for (int i = 0; i < recordCount; i++) {
@@ -62,87 +62,87 @@ void loop() {
               payloadAsString += (char)payload[c];
             }
 
-            // Ignorer les deux derniers caractères 
+            // Ignore the last two characters 
             String textMessage = payloadAsString.substring(1, payloadAsString.length() - 2); 
 
-            // Vérifier si le message correspond au code attendu
-            Serial.print("Enregistrement "); Serial.println(i + 1);
-            Serial.print("Charge utile: "); Serial.println(textMessage);
+            // Check if the message matches the expected code
+            Serial.print("Record "); Serial.println(i + 1);
+            Serial.print("Payload: "); Serial.println(textMessage);
             
             if (textMessage == code) {
-              if(etatCoffre){
-                Serial.println("Bon code, fermeture du coffre: ");
+              if (coffreState) {
+                Serial.println("Correct code, closing the coffre: ");
               }
-              if(!etatCoffre){
-                Serial.println("Bon code, ouverture du coffre: ");
+              if (!coffreState) {
+                Serial.println("Correct code, opening the coffre: ");
               }
               moveDoor(servoMotor);
             } else {
-              Serial.println("Pas le bon code: " + textMessage);
+              Serial.println("Incorrect code: " + textMessage);
             }
           }
         } else {
-          Serial.println("Aucun message NDEF trouvé sur ce tag.");
+          Serial.println("No NDEF message found on this tag.");
         }
       } else {
-        Serial.println("Aucune carte NFC détectée.");
+        Serial.println("No NFC card detected.");
       }
     }
   }
 
-  if(isWriting){
-    // Mode écriture
-    digitalWrite(ledMode, HIGH); // Allumer la LED
+  if (isWriting) {
+    // Writing mode
+    digitalWrite(ledMode, HIGH); // Turn on the LED
 
-    Serial.println("Quel code voulez-vous écrire ? (entrez le code)");
-      while (Serial.available() == 0) {
-        // Attendre que l'utilisateur entre un message
-      }
-      message = Serial.readString();
-      message.trim(); // Enlever les espaces autour
+    Serial.println("Which code do you want to write? (enter the code)");
+    while (Serial.available() == 0) {
+      // Wait for the user to enter a message
+    }
+    message = Serial.readString();
+    message.trim(); // Remove spaces around
 
-    if (message == "error"){
-      Serial.println("Code d'erreur reçu, annulation de l'écriture");
+    if (message == "error") {
+      Serial.println("Error code received, canceling write");
       isWriting = false;
     }
 
-    if(message != "error"){
-      Serial.println("\nPlacez une carte NFC formatée sur le lecteur.");
+    if (message != "error") {
+      Serial.println("\nPlace a formatted NFC card on the reader.");
 
-      // Attendre que la carte NFC soit présente pour l'écriture
+      // Wait for the NFC card to be present for writing
       while (!nfc.tagPresent()) {
-        // Attente active
+        // Active waiting
       }
 
-      NfcTag tag = nfc.read();  // Lire le tag
+      NfcTag tag = nfc.read();  // Read the tag
       String tagId = tag.getUidString();
-      Serial.print("UID de la carte: "); 
+      Serial.print("Card UID: "); 
       Serial.println(tagId);
       
-      // Écrire le message texte sur la carte
+      // Write the text message to the card
       NdefMessage ndefMessage;
       ndefMessage.addTextRecord("fr", message); 
 
-      // Écrire le message NDEF sur la carte
+      // Write the NDEF message to the card
       if (nfc.write(ndefMessage)) {
-        code = message; // Mettre à jour le code à lire
-        Serial.println("Écriture réussie !");
-        Serial.print("Code : " + message);
-        isWriting = false; // Passer en mode lecture après l'écriture
+        code = message; // Update the code to read
+        Serial.println("Write successful!");
+        Serial.print("Code: " + message);
+        isWriting = false; // Switch to read mode after writing
       } 
       else {
-        Serial.println("Échec de l'écriture.");
+        Serial.println("Write failed.");
         isWriting = false;
       }
     }
   }
 
-  delay(2000); // Attendre x000 secondes avant la prochaine lecture
+  delay(2000); // Wait 2000 milliseconds before the next read
 }
 
-void moveDoor(Servo &servoMotor){
-    etatCoffre = !etatCoffre; // Toggle state
-    if (etatCoffre) {
+void moveDoor(Servo &servoMotor) {
+    coffreState = !coffreState; // Toggle state
+    if (coffreState) {
         servoMotor.write(1); // Open
         digitalWrite(ledOpen, HIGH);
         digitalWrite(ledClose, LOW);
@@ -152,4 +152,3 @@ void moveDoor(Servo &servoMotor){
         digitalWrite(ledOpen, LOW);
     }
 }
-
