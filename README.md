@@ -42,4 +42,5 @@ Hotel, Schools, Changing Room
 
 ## Screenshots
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![Schéma de fonctionnement](https://github.com/user-attachments/assets/b43348bb-0549-418e-beba-af79ef84f6e0)
+
