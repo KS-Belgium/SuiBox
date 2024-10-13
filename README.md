@@ -4,7 +4,7 @@ A security system for hotel safes and more, built with Sui Technology. It addres
 
 ## Demo
 
-Insert gif or link to demo
+[Watch the demo on YouTube](https://www.youtube.com/watch?v=ahdUjHptHpA)
 
 ## Authors
 
@@ -17,11 +17,12 @@ Insert gif or link to demo
 - Unique access to the safe for each customer via blockchain signature
 - Access with an NFC badge or through a secure blockchain-based system
 - Automated user rental management: safes are assigned based on room bookings and freed up upon checkout
+- **A real world** application for the blockchain 
 
 ## Tech Stack
 
-**Front-end:** React, Tailwind  
-**Back-end:** Sui Move, Python, C++ (Arduino)
+**Front-end:** React TypeScript, Vite
+**Back-end:** Sui Move, C (Arduino), JavaScript
 
 ## Concrete Example: Traditional Hotel Safe Issues
 
