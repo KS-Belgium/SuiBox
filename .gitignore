@@ -1,6 +1,7 @@
 .idea
 node_modules
-
+Contracts/*/build/
+Backend/
 .sass-cache/
 *.css.map
 *.sass.map

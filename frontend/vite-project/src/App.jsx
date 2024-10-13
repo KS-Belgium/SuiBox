@@ -3,7 +3,7 @@ import './App.css';
 import { ConnectButton } from "@suiet/wallet-kit";
 import Vaults_grid from "./components/Vaults_grid.jsx";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import Vault_config from "./components/Vault_config.jsx";
+import Vault_config from "./components/Vault_config.tsx";
 
 function App() {
     const [lastMessage, setLastMessage] = useState('');
@@ -51,6 +51,7 @@ function App() {
 
     const handleConfirmation = () => {
         const userConfirmed = window.confirm("Do you confirm?"); // Display confirmation pop-up
+        // TODO: Si contrat Success, sinon Fail
         if (userConfirmed) {
             sendCommandToArduino("true"); // Send confirmation to Arduino
         } else {
