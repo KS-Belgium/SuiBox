@@ -1,4 +1,5 @@
 import {useParams} from "react-router-dom";
+import styles from '../App.module.css';
 
 function Vault_config() {
     const { vaultId } = useParams();
@@ -6,11 +7,11 @@ function Vault_config() {
 
     return (
         <>
-        <div>
-            <h1>Détails du Coffre {vaultId}</h1>
-            <p>Informations du coffre {vaultId}</p>
-        </div>
-        <button>Ouvrir</button>
+            <div>
+                <h1>Vault {vaultId}</h1>
+                <img src={"../../public/Vault icon.png"} style={{width:"80vw"}}/>
+            </div>
+            <button className={styles.button}>Unlock</button>
         </>
     );
 }

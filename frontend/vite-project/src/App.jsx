@@ -8,7 +8,6 @@ import Vault_config from "./components/Vault_config.jsx";
 function App() {
     const [count, setCount] = useState(0);
 
-    console.log("La vie est dure…");
     return (
         <>
             <Router>
