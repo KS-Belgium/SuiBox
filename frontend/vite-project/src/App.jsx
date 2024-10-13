@@ -51,7 +51,6 @@ function App() {
 
     const handleConfirmation = () => {
         const userConfirmed = window.confirm("Do you confirm?"); // Display confirmation pop-up
-        // TODO: Si contrat Success, sinon Fail
         if (userConfirmed) {
             sendCommandToArduino("true"); // Send confirmation to Arduino
         } else {
