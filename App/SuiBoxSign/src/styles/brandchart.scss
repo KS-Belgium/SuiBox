@@ -1,0 +1,21 @@
+// Default CSS for any component
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// Default alert colors
+$theme-colors: (
+        "success": #28a745,
+        "info": #17a2b8,
+        "warning": #ffc107,
+        "danger": #dc3545
+);
+
+// Default theme colors
+$dark-theme: true !default;
+
+// Default variables
+$primary-color: #0b2b4c;
+$text-color: #ffffff;

@@ -1,0 +1,72 @@
+@use "sass:map";
+@import "../brandchart.scss";
+
+@if not $dark-theme  {
+  $primary-color: lighten($primary-color, 60%);
+  $text-color: #000;
+}
+
+#alert-box{
+  margin-top: 2rem;
+  padding: 2rem;
+  &.success {
+    background: map.get($theme-colors, "success");
+  }
+  &.info {
+    background: map.get($theme-colors, "info");
+  }
+  &.warning {
+    background: map.get($theme-colors, "warning");
+  }
+  &.danger {
+    background: map.get($theme-colors, "danger");
+  }
+
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+
+  .title {
+    font-size: 2rem;
+    margin-bottom: 6rem;
+  }
+
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .radio-group{
+      display: flex;
+      flex-direction: row;
+      .field {
+        display: flex;
+        align-items: center;
+        margin-left: 10px;
+      }
+      .field input[type="radio"] {
+        margin-right: 10px;
+      }
+    }
+
+    .button-group{
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    .button {
+      margin-top: 2rem;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  }
+}

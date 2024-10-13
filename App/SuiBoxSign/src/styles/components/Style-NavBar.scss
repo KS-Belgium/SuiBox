@@ -1,0 +1,30 @@
+@import "../brandchart.scss";
+
+@if not $dark-theme  {
+  $primary-color: lighten($primary-color, 60%);
+  $text-color: #000;
+}
+
+.navbar {
+  background-color: $primary-color;
+  color: $text-color;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: $text-color;
+  }
+  .navbar-menu{
+    a{
+        color: $text-color;
+        text-decoration: none;
+        margin: 0 10px;
+        &:hover{
+            text-decoration: underline;
+        }
+    }
+  }
+}
