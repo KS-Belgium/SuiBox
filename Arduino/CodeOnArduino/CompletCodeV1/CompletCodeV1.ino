@@ -37,56 +37,70 @@ void loop() {
 
   if (!isWriting) {
     // Read mode
-    if (code != "null") {
-      digitalWrite(ledMode, LOW); // Turn off the LED
-      Serial.println("\nScan a NFC tag\n");
+    digitalWrite(ledMode, LOW); // Turn off the LED
+    Serial.println("\nScan a NFC tag\n");
 
-      if (nfc.tagPresent()) {  // Check if an NFC tag is present
-        NfcTag tag = nfc.read();  // Read the tag
+    if (nfc.tagPresent()) {  // Check if an NFC tag is present
+      NfcTag tag = nfc.read();  // Read the tag
 
-        if (tag.hasNdefMessage()) {
-          NdefMessage ndefMessage = tag.getNdefMessage();
-          int recordCount = ndefMessage.getRecordCount();
+      if (tag.hasNdefMessage()) {
+        NdefMessage ndefMessage = tag.getNdefMessage();
+        int recordCount = ndefMessage.getRecordCount();
 
-          Serial.print("Number of NDEF records found: ");
-          Serial.println(recordCount);
+        Serial.print("Number of NDEF records found: ");
+        Serial.println(recordCount);
 
-          for (int i = 0; i < recordCount; i++) {
-            NdefRecord record = ndefMessage.getRecord(i);
-            int payloadLength = record.getPayloadLength();
-            byte payload[payloadLength];
-            record.getPayload(payload);
+        for (int i = 0; i < recordCount; i++) {
+          NdefRecord record = ndefMessage.getRecord(i);
+          int payloadLength = record.getPayloadLength();
+          byte payload[payloadLength];
+          record.getPayload(payload);
 
-            String payloadAsString = "";
-            for (int c = 0; c < payloadLength; c++) {
-              payloadAsString += (char)payload[c];
-            }
-
-            // Ignore the last two characters 
-            String textMessage = payloadAsString.substring(1, payloadAsString.length() - 2); 
-
-            // Check if the message matches the expected code
-            Serial.print("Record "); Serial.println(i + 1);
-            Serial.print("Payload: "); Serial.println(textMessage);
-            
-            if (textMessage == code) {
-              if (coffreState) {
-                Serial.println("Correct code, closing the coffre: ");
-              }
-              if (!coffreState) {
-                Serial.println("Correct code, opening the coffre: ");
-              }
-              moveDoor(servoMotor);
-            } else {
-              Serial.println("Incorrect code: " + textMessage);
-            }
+          String payloadAsString = "";
+          for (int c = 0; c < payloadLength; c++) {
+            payloadAsString += (char)payload[c];
           }
-        } else {
-          Serial.println("No NDEF message found on this tag.");
+
+          // Ignore the last two characters 
+          String textMessage = payloadAsString.substring(1, payloadAsString.length() - 2); 
+
+          // Check if the message matches the expected code
+          Serial.print("Record "); Serial.println(i + 1);
+          Serial.print("Payload: "); Serial.println(textMessage);
+          
+          if (textMessage == code and code != "null") {
+            if (coffreState) {
+              Serial.println("Correct code, closing the coffre: ");
+              moveDoor(servoMotor);
+            }
+            else if (!coffreState) {
+              Serial.println("Correct code");
+              Serial.println("Ask for contract confirmation");
+              while (Serial.available() == 0) {
+                // Wait for the user to enter a message
+              }
+              message = Serial.readString();
+              message.trim(); // Remove spaces around
+              Serial.println(message);
+              if(message == "true"){
+                Serial.println("Open");
+                moveDoor(servoMotor);
+              }
+              if(message == "false"){
+                Serial.println("Confirmation fail");
+              }
+            }
+            textMessage = "null";
+          } 
+          else {
+            Serial.println("Incorrect code: " + textMessage);
+          }
         }
       } else {
-        Serial.println("No NFC card detected.");
+        Serial.println("No NDEF message found on this tag.");
       }
+    } else {
+      Serial.println("No NFC card detected.");
     }
   }
 

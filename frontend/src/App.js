@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
+import './App.css'; // Assurez-vous de créer ce fichier pour le CSS
+import { 
+    sendCommandToArduino, 
+    sendCodeToArduino, 
+    cancelAction, 
+    fetchStatus, 
+    fetchLastMessage, 
+    handleConfirmationResponse 
+} from './arduinoFunctions';
 
 function App() {
     const [response, setResponse] = useState('');
@@ -8,11 +16,14 @@ function App() {
     const [showRoomList, setShowRoomList] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState('');
     const [code, setCode] = useState(''); // Code to send
+    const [mode, setMode] = useState('read'); // Mode of the safe
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false); // State for modal visibility requests
 
     // Function to create a new card
     const createCard = async () => {
         setShowRoomList(true);
         await sendCommandToArduino('write'); // Send 'write' to the Arduino
+        setMode("write");
     };
 
     // Function to select a room
@@ -22,169 +33,140 @@ function App() {
     };
 
     // Function to send the code to the Arduino
-    const sendCodeToArduino = async () => {
-        if (!selectedRoom || !code) return; // Check if a room and code are selected
-        try {
-            const res = await fetch('http://localhost:3000/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: `${code}` }) // Message with the code
-            });
-            const data = await res.text();
-            setResponse(data);
-            setShowRoomList(false); // Hide the list after sending
-            setSelectedRoom(''); // Reset the selected room
-            setCode(''); // Reset the code
-        } catch (error) {
-            console.error('Error:', error);
-            setResponse('Error sending the code.');
-        }
-    };
-
-    // Function to send a command to the Arduino
-    const sendCommandToArduino = async (command) => {
-        try {
-            const res = await fetch('http://localhost:3000/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: command }) // Send the command
-            });
-            const data = await res.text();
-            setResponse(data);
-        } catch (error) {
-            console.error('Error:', error);
-            setResponse('Error sending the command.');
-        }
-    };
-
-    // Function to send an error message to the Arduino
-    const cancelAction = async () => {
-        try {
-            const res = await fetch('http://localhost:3000/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: 'error' }) // Send the error message
-            });
-            const data = await res.text();
-            setResponse(data);
-            setShowRoomList(false); // Hide the list after cancellation
-            setSelectedRoom(''); // Reset the selected room
-            setCode(''); // Reset the code
-        } catch (error) {
-            console.error('Error:', error);
-            setResponse('Error sending the cancellation message.');
-        }
+    const sendCode = async () => {
+        const res = await sendCodeToArduino(selectedRoom, code);
+        setResponse(res);
+        setShowRoomList(false); // Hide the list after sending
+        setSelectedRoom(''); // Reset the selected room
+        setCode(''); // Reset the code
     };
 
     // Function to fetch the state of the safe
-    const fetchStatus = async () => {
-        try {
-            const res = await fetch('http://localhost:3000/status');
-            const data = await res.text();
-            setStatus('Safe status: ' + data);
-        } catch (error) {
-            console.error('Error:', error);
-            setStatus('Error fetching the status.');
-        }
+    const fetchSafeStatus = async () => {
+        const status = await fetchStatus();
+        setStatus('Safe status: ' + status);
     };
 
     // Function to fetch the last message from the Arduino
-    const fetchLastMessage = async () => {
-        try {
-            const res = await fetch('http://localhost:3000/last-message');
-            const data = await res.text();
-            setLastMessage('Last message from Arduino: ' + data);
-        } catch (error) {
-            console.error('Error:', error);
-            setLastMessage('No message received.');
+    const fetchArduinoLastMessage = async () => {
+        const message = await fetchLastMessage();
+        setLastMessage('Last message from Arduino: ' + message);
+        console.log(message); // Debug log
+
+        if (message === "Which code do you want to write? (enter the code)") {
+            setMode("write");
+        }
+
+        else if (message === "Ask for contract confirmation") {
+            setMode("confirmation");
+            setShowConfirmationModal(true); // Show the confirmation modal
+        }
+        else{
+            setMode("read");
         }
     };
 
+    // Function to handle confirmation response
+    const handleResponse = async (response) => {
+        const res = await handleConfirmationResponse(response);
+        setResponse(res);
+        setTimeout(() => {
+            setShowConfirmationModal(false);
+            setMode("read");
+        }, 3000); // 2000 milliseconds = 2 seconds
+    };
+
+
     // Use useEffect to call fetchStatus and fetchLastMessage every 2 seconds
     useEffect(() => {
-        const intervalStatus = setInterval(fetchStatus, 2000);
-        const intervalLastMessage = setInterval(fetchLastMessage, 2000);
-
-        // Clean up the intervals on component unmount
+        const intervalStatus = setInterval(fetchSafeStatus, 1000); // Always fetch status every 1 second
+    
+        let intervalLastMessage; // Define intervalLastMessage here, but don't start it yet
+    
+        // Only start the fetchArduinoLastMessage interval if mode is not "confirmation"
+        if (mode !== "confirmation") {
+            intervalLastMessage = setInterval(fetchArduinoLastMessage, 1000);
+        }
+    
+        // Cleanup function to clear the intervals when component unmounts or mode changes
         return () => {
-            clearInterval(intervalStatus);
-            clearInterval(intervalLastMessage);
+            clearInterval(intervalStatus); // Always clear the status interval
+            if (intervalLastMessage) {
+                clearInterval(intervalLastMessage); // Only clear message interval if it was started
+            }
         };
-    }, []);
+    }, []); // Re-run the effect when `mode` changes
+    
 
     return (
-        <div className="container mt-5">
-            <h1 className="text-center">Control the Arduino Safe</h1>
-            <div className="row">
-                <div className="col-md-4">
-                    {!showRoomList && ( // Show the button only if the list is hidden
-                        <button className="btn btn-primary mb-3" onClick={createCard}>
-                            Add a new card
-                        </button>
-                    )}
-                    {showRoomList && (
-                        <div className="list-group">
-                            <a 
-                                href="#" 
-                                className="list-group-item list-group-item-action" 
-                                onClick={() => selectRoom('Room 1')}>
-                                Room 1
-                            </a>
-                            <a 
-                                href="#" 
-                                className="list-group-item list-group-item-action disabled">
-                                Room 2 (Disabled)
-                            </a>
-                            <a 
-                                href="#" 
-                                className="list-group-item list-group-item-action" 
-                                onClick={() => selectRoom('Room 3')}>
-                                Room 3
-                            </a>
+        <div className="app-container">
+            <h1>Control the Arduino Safe</h1>
+            <div className="room-selection">
+                {!showRoomList && (
+                    <button className="button" onClick={createCard}>
+                        Add a new card
+                    </button>
+                )}
+                {showRoomList && (
+                    <div className="room-list">
+                        <div 
+                            className="room-item" 
+                            onClick={() => selectRoom('Room 1')}>
+                            Room 1
                         </div>
-                    )}
-                </div>
-                <div className="col-md-8">
-                    {selectedRoom && (
-                        <div>
+                        <div className="room-item disabled">
+                            Room 2 (Disabled)
+                        </div>
+                        <div 
+                            className="room-item" 
+                            onClick={() => selectRoom('Room 3')}>
+                            Room 3
+                        </div>
+                    </div>
+                )}
+            </div>
+            <div className="code-entry">
+                {selectedRoom && (
+                    <div>
                         <h3>Selected: {selectedRoom}</h3>
-                        <div className="form-group">
-                            <label htmlFor="codeInput">Code to send:</label>
-                            <input 
-                                type="text" 
-                                className="form-control" 
-                                id="codeInput" 
-                                value={code} 
-                                onChange={(e) => setCode(e.target.value)} // Update the code on input change
-                                placeholder="Enter your code here"
-                                required
-                            />
-                        </div>
-                        <button className="btn btn-danger me-2 mt-3" onClick={cancelAction}>
+                        <input 
+                            type="text" 
+                            className="code-input" 
+                            value={code} 
+                            onChange={(e) => setCode(e.target.value)} // Update the code on input change
+                            placeholder="Enter your code here"
+                            required
+                        />
+                        <button className="button cancel" onClick={cancelAction}>
                             Cancel
                         </button>
-                        <button className="btn btn-success mt-3" onClick={sendCodeToArduino}>
+                        <button className="button send" onClick={sendCode}>
                             Send code
                         </button>
                     </div>
-                    )}
-                    <div className="alert alert-info mt-3" role="alert">
-                        {response}
-                    </div>
-                    <div className="alert alert-secondary" role="alert">
-                        {status}
-                    </div>
-                    <div className="alert alert-light" role="alert">
-                        {lastMessage}
+                )}
+                <div className="response-message">{response}</div>
+                <div className="status-message">{status}</div>
+                <div className="last-message">{lastMessage}</div>
+                <div className="mode">{mode}</div>
+            </div>
+
+            {/* Confirmation Modal */}
+            {showConfirmationModal && mode == "confirmation" &&(
+                <div className="modal">
+                    <div className="modal-content">
+                        <span className="close" onClick={() => setShowConfirmationModal(false)}>&times;</span>
+                        <h2>Confirmation Required</h2>
+                        <p>Do you confirm the action?</p>
+                        <button className="button" onClick={() => handleResponse('no')}>
+                            No
+                        </button>
+                        <button className="button" onClick={() => handleResponse('yes')}>
+                            Yes
+                        </button>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

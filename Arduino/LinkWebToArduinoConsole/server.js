@@ -74,7 +74,7 @@ app.get('/status', (req, res) => {
 // Route to get the last message received from the Arduino
 app.get('/last-message', (req, res) => {
   if (lastMessage) {
-    res.send('Last received message: ' + lastMessage);
+    res.send(lastMessage);
   } else {
     res.status(404).send('No message received at the moment.');
   }
