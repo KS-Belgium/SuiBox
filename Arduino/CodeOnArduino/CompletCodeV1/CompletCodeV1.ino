@@ -93,7 +93,7 @@ void loop() {
             textMessage = "null";
           } 
           else {
-            Serial.println("Incorrect code: " + textMessage);
+            Serial.print("Failed code: " + code + ", recu: " + textMessage);
           }
         }
       } else {
@@ -126,16 +126,16 @@ void loop() {
       // Wait for the NFC card to be present for writing
       while (!nfc.tagPresent()) {
         // Active waiting
-      }
+}
 
       NfcTag tag = nfc.read();  // Read the tag
       String tagId = tag.getUidString();
-      Serial.print("Card UID: "); 
+      Serial.print("Card UID: ");
       Serial.println(tagId);
-      
+
       // Write the text message to the card
       NdefMessage ndefMessage;
-      ndefMessage.addTextRecord("fr", message); 
+      ndefMessage.addTextRecord("fr", message);
 
       // Write the NDEF message to the card
       if (nfc.write(ndefMessage)) {
@@ -143,7 +143,9 @@ void loop() {
         Serial.println("Write successful!");
         Serial.print("Code: " + message);
         isWriting = false; // Switch to read mode after writing
-      } 
+        digitalWrite(ledMode, LOW);
+        delay(2000);
+      }
       else {
         Serial.println("Write failed.");
         isWriting = false;
@@ -151,7 +153,7 @@ void loop() {
     }
   }
 
-  delay(2000); // Wait 2000 milliseconds before the next read
+  delay(500); // Wait 2000 milliseconds before the next read
 }
 
 void moveDoor(Servo &servoMotor) {
@@ -165,4 +167,5 @@ void moveDoor(Servo &servoMotor) {
         digitalWrite(ledClose, HIGH);
         digitalWrite(ledOpen, LOW);
     }
+    delay(2000);
 }
