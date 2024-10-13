@@ -62,7 +62,7 @@ function Vaults_grid() {
     }, []);
 
     const handleConfirmation = () => {
-        const userConfirmed = window.confirm("Do you confirm?"); // Display confirmation pop-up
+        const userConfirmed = window.confirm("Do you confirm?"); // Display confirmation pop-upw
         if (userConfirmed) {
             sendCommandToArduino("true"); // Send confirmation to Arduino
         } else {
@@ -77,16 +77,37 @@ function Vaults_grid() {
         }, 2000); // 2000 milliseconds = 2 seconds
     };
 
+    const styles = {
+        vault: {
+            display: 'block',
+            padding: '10px',
+            margin: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '5px',
+            textDecoration: 'none',
+            color: '#333',
+            pointerEvents: 'none',
+            backgroundColor: 'lightgrey', // default grey
+        },
+        specialVault: {
+            display: 'block',
+            padding: '10px',
+            margin: '10px',
+            border: '1px solid #ccc',
+            borderRadius: '5px',
+            textDecoration: 'none',
+            color: '#fff',
+            backgroundColor: 'dodgerblue',
+        }
+    };
+
     return (
         <>
             <NavBar/>
             {vaults.map((_vault, index) => (
-                <Link to={`/coffre/${index + 1}`} key={index}>
-                    Coffre {index + 1}
+                <Link to={`/coffre/${index + 1}`} key={index} style={index === 4 ? styles.specialVault : styles.vault}>
+                    Vault {index + 1}
                 </Link>
-                // <button onClick={() => handleNavigate(index + 1)} key={index}>
-                //     Coffre {index + 1}
-                // </button>
             ))}
         </>
     );

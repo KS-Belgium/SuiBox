@@ -22,4 +22,3 @@ module safehotel::safehotel {
     }
 
 }
-// sui client ptb --gas-budget 100000000 --assign sender @%MY_ADDRESS% --move-call 0x6775e42517e3e00f9cd719ec1e3419ee8e8222fc3231ec91f519f52f6e33ff07::safehotel::new_transaction --help

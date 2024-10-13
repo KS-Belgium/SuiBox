@@ -141,14 +141,23 @@ function Vault_config() {
         <>
             <NavBar/>
             <div>
-                <h1>Détails du Coffre {vaultId}</h1>
-                <p>Informations du coffre {vaultId}</p>
+                <h1>Details of the vault {vaultId}</h1>
+                <p>Informations of the vault {vaultId}</p>
             </div>
-            <button className="btn btn-success mt-3" onClick={call_new_transaction}>
-                Réserver
-            </button>
-            <button className="btn btn-danger mt-3" onClick={cancelAction}>
-                Annuler
+            <button onClick={call_new_transaction}
+            style={
+                {
+                    backgroundColor: "blue",
+                    color: "white",
+                    padding: "10px",
+                    borderRadius: "5px",
+                    border: "none",
+                    cursor: "pointer",
+                    margin: "10px"
+                }
+            }
+            >
+                Book
             </button>
         </>
     );
